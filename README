@@ -1,0 +1,124 @@
+NAME
+    App::datecalc - Date arithmetics
+
+VERSION
+    This document describes version 0.01 of App::datecalc (from Perl
+    distribution App-datecalc), released on 2014-05-20.
+
+SYNOPSIS
+     use App::datecalc;
+     my $calc = App::datecalc->new;
+     say $calc->eval('2014-05-13 + 2 days'); # -> 2014-05-15
+
+DESCRIPTION
+    This is an early release. More features and documentation will follow in
+    subsequent releases.
+
+    This module provides a date calculator. You can write date literals in
+    ISO 8601 format (though not all format variants are supported), e.g.
+    "2014-05-13". Date duration can be specified using the natural syntax
+    e.g. "2 days 13 hours" or using the ISO 8601 format e.g. "P2DT13H".
+
+    Currently supported calculations:
+
+    *   date literals
+
+         2014-05-19
+         now
+         today
+         tomorrow
+
+    *   (NOT YET) time and date-time literals
+
+    *   duration literals, either in ISO 8601 format or natural syntax
+
+         P3M2D
+         3 months 2 days
+
+    *   date addition/subtraction with a duration
+
+         2014-05-19 - 2 days
+         2014-05-19 + P29W
+
+    *   date subtraction with another date
+
+         2014-05-19 - 2013-12-25
+
+    *   duration addition/subtraction with another duration
+
+         1 week 1 day + P10D
+
+    *   duration multiplication/division with a number
+
+         P2D * 2
+         2 * P2D
+
+    *   (NOT YET) extract elements from date
+
+         year(2014-05-20)
+         month(2014-05-20)
+         day(2014-05-20)
+         dow(today)
+
+    *   (NOT YET) extract elements from duration
+
+         weeks(P22D)
+
+    *   (NOT YET) some simple number arithmetics
+
+         2*4
+         2*4 days 1+1 hours
+
+    *   (NOT YET) date comparison
+
+         today >= 2014-05-20
+
+    *   (NOT YET) duration comparison
+
+         P20D < P3W
+
+METHODS
+  new
+  eval
+TODO
+    Support more special date literals: {last,next} {week,month,year,...},
+    etc.
+
+    Variable assignment?
+
+SEE ALSO
+    DateTime and DateTime::Format::ISO8601, the backend modules used to do
+    the actual date calculation.
+
+    Marpa::R2 is used to generate the parser.
+
+    Date::Calc another date module on CPAN. No relation except the
+    similarity of name.
+
+    <http://en.wikipedia.org/wiki/ISO_8601> for more information about the
+    ISO 8601 format.
+
+HOMEPAGE
+    Please visit the project's homepage at
+    <https://metacpan.org/release/App-datecalc>.
+
+SOURCE
+    Source repository is at
+    <https://github.com/sharyanto/perl-App-datecalc>.
+
+BUGS
+    Please report any bugs or feature requests on the bugtracker website
+    <https://rt.cpan.org/Public/Dist/Display.html?Name=App-datecalc>
+
+    When submitting a bug or request, please include a test-file or a patch
+    to an existing test-file that illustrates the bug or desired feature.
+
+AUTHOR
+    Steven Haryanto <stevenharyanto@gmail.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2014 by Steven Haryanto.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
