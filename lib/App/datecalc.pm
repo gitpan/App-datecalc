@@ -9,8 +9,8 @@ use DateTime::Format::ISO8601;
 use MarpaX::Simple qw(gen_parser);
 use Scalar::Util qw(blessed);
 
-our $VERSION = '0.01'; # VERSION
-our $DATE = '2014-05-20'; # DATE
+our $VERSION = '0.02'; # VERSION
+our $DATE = '2014-05-21'; # DATE
 
 # XXX there should already be an existing module that does this
 sub __fmtduriso {
@@ -47,46 +47,61 @@ lexeme default         = latm=>1
 
 answer               ::= date_expr
                        | dur_expr
-#                      | num_expr
+#                       | str_expr
+                       | num_expr
+
+num_expr             ::= num_add
+num_add              ::= num_mult
+                       | num_add op_addsub num_add                        action=>num_add
+num_mult             ::= num_pow
+                       | num_mult op_multdiv num_mult                     action=>num_mult
+num_pow              ::= num_term
+                      || num_pow '**' num_pow                             action=>num_pow assoc=>right
+num_term             ::= num_literal
+                       | func_idate_onum
+                       | func_idur_onum
+                       | ('(') num_expr (')')
 
 date_expr            ::= date_sub_date
-
 date_sub_date        ::= date_add_dur
                        | date_sub_date '-' date_sub_date                  action=>date_sub_date
-
 date_add_dur         ::= date_term
-                       | date_add_dur op_plusminus dur_term               action=>date_add_dur
-
+                       | date_add_dur op_addsub dur_term                  action=>date_add_dur
 date_term            ::= date_literal
 #                       | date_variable
-                       | ('(') date_expr (')')                            action=>date_parenthesis
+#                       | func_idate_odate
+                       | ('(') date_expr (')')
 
-year                   ~ [\d][\d][\d][\d]
-mon2                   ~ [\d][\d]
-day                    ~ [\d][\d]
-date_literal         ::= year ('-') mon2 ('-') day                        action=>datelit_isodate
+func_idate_onum_names  ~ 'year' | 'month' | 'day' | 'dow' | 'quarter'
+                       | 'doy' | 'wom' | 'woy' | 'doq'
+                       | 'hour' | 'minute' | 'second'
+func_idate_onum      ::= func_idate_onum_names ('(') date_expr (')')      action=>func_idate_onum
+
+func_idur_onum_names   ~ 'years' | 'months' | 'weeks' | 'days'
+                       | 'hours' | 'minutes' | 'seconds'
+func_idur_onum       ::= func_idur_onum_names ('(') dur_expr (')')        action=>func_idur_onum
+
+date_literal         ::= iso_date_literal                                 action=>datelit_iso
                        | 'now'                                            action=>datelit_special
                        | 'today'                                          action=>datelit_special
                        | 'yesterday'                                      action=>datelit_special
                        | 'tomorrow'                                       action=>datelit_special
 
+year4                  ~ [\d][\d][\d][\d]
+mon2                   ~ [\d][\d]
+day2                   ~ [\d][\d]
+iso_date_literal       ~ year4 '-' mon2 '-' day2
+
 dur_expr             ::= dur_add_dur
-
 dur_add_dur          ::= dur_mult_num
-                       | dur_add_dur op_plusminus dur_add_dur             action=>dur_add_dur
+                       | dur_add_dur op_addsub dur_add_dur                action=>dur_add_dur
 
-# can't use num directly because marpa will complain 'A lexeme in G1 is not a
-# lexeme in any of the lexers'. since num appears in RHS in L0 rules, it's not
-# considered a lexeme.
-num_opn                ~ num
 dur_mult_num         ::= dur_term
-                       | dur_mult_num op_multdiv num_opn                  action=>dur_mult_num
-                       | num_opn op_mult dur_mult_num                     action=>dur_mult_num
-
+                       | dur_mult_num op_multdiv num_expr                 action=>dur_mult_num
+                       | num_expr op_mult dur_mult_num                    action=>dur_mult_num
 dur_term             ::= dur_literal
 #                       | dur_variable
                        | '(' dur_expr ')'
-
 dur_literal          ::= nat_dur_literal
                        | iso_dur_literal
 
@@ -176,6 +191,7 @@ iso_dur_literal0       ~ 'P' idl_year     idl_month_opt idl_week_opt idl_day_opt
 
 sign                   ~ [+-]
 digits                 ~ [\d]+
+num_literal            ~ num
 num                    ~ digits
                        | sign digits
                        | digits '.' digits
@@ -183,7 +199,8 @@ num                    ~ digits
 posnum                 ~ digits
                        | digits '.' digits
 
-op_plusminus           ~ [+-]
+op_addsub              ~ [+-]
+
 op_mult                ~ [*]
 op_multdiv             ~ [*/]
 
@@ -193,13 +210,10 @@ ws_opt                 ~ [\s]*
 
 _
         actions => {
-            date_parenthesis => sub {
+            datelit_iso => sub {
                 my $h = shift;
-                $_[0];
-            },
-            datelit_isodate => sub {
-                my $h = shift;
-                DateTime->new(year=>$_[0], month=>$_[1], day=>$_[2]);
+		my @date = split /-/, $_[0];
+                DateTime->new(year=>$date[0], month=>$date[1], day=>$date[2]);
             },
             date_sub_date => sub {
                 my $h = shift;
@@ -301,6 +315,80 @@ _
                 $params{seconds} = $1 if $t =~ /(-?\d+(?:\.\d+)?)S/i;
                 DateTime::Duration->new(%params);
             },
+            func_idate_onum => sub {
+                my $h = shift;
+                my $fn = $_[0];
+                my $d = $_[1];
+                if ($fn eq 'year') {
+                    $d->year;
+                } elsif ($fn eq 'month') {
+                    $d->month;
+                } elsif ($fn eq 'day') {
+                    $d->day;
+                } elsif ($fn eq 'dow') {
+                    $d->day_of_week;
+                } elsif ($fn eq 'quarter') {
+                    $d->quarter;
+                } elsif ($fn eq 'doy') {
+                    $d->day_of_year;
+                } elsif ($fn eq 'wom') {
+                    $d->week_of_month;
+                } elsif ($fn eq 'woy') {
+                    $d->week_number;
+                } elsif ($fn eq 'doq') {
+                    $d->day_of_quarter;
+                } elsif ($fn eq 'hour') {
+                    $d->hour;
+                } elsif ($fn eq 'minute') {
+                    $d->minute;
+                } elsif ($fn eq 'second') {
+                    $d->second;
+                } else {
+                    die "BUG: Unknown date function $fn";
+                }
+            },
+            func_idur_onum => sub {
+                my $h = shift;
+                my $fn = $_[0];
+                my $dur = $_[1];
+                if ($fn eq 'years') {
+                    $dur->years;
+                } elsif ($fn eq 'months') {
+                    $dur->months;
+                } elsif ($fn eq 'weeks') {
+                    $dur->weeks;
+                } elsif ($fn eq 'days') {
+                    $dur->days;
+                } elsif ($fn eq 'hours') {
+                    $dur->hours;
+                } elsif ($fn eq 'minutes') {
+                    $dur->minutes;
+                } elsif ($fn eq 'seconds') {
+                    $dur->seconds;
+                } else {
+                    die "BUG: Unknown duration function $fn";
+                }
+            },
+            num_add => sub {
+                my $h = shift;
+                if ($_[1] eq '+') {
+                    $_[0] + $_[2];
+                } else {
+                    $_[0] - $_[2];
+                }
+            },
+            num_mult => sub {
+                my $h = shift;
+                if ($_[1] eq '*') {
+                    $_[0] * $_[2];
+                } else {
+                    $_[0] / $_[2];
+                }
+            },
+            num_pow => sub {
+                my $h = shift;
+                $_[0] ** $_[2];
+            },
         },
         trace_terminals => $ENV{DEBUG},
         trace_values => $ENV{DEBUG},
@@ -323,7 +411,7 @@ sub eval {
 }
 
 1;
-#ABSTRACT: Date arithmetics
+#ABSTRACT: Date calculator
 
 __END__
 
@@ -333,11 +421,11 @@ __END__
 
 =head1 NAME
 
-App::datecalc - Date arithmetics
+App::datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.01 of App::datecalc (from Perl distribution App-datecalc), released on 2014-05-20.
+This document describes version 0.02 of App::datecalc (from Perl distribution App-datecalc), released on 2014-05-21.
 
 =head1 SYNOPSIS
 
@@ -350,10 +438,10 @@ This document describes version 0.01 of App::datecalc (from Perl distribution Ap
 B<This is an early release. More features and documentation will follow in
 subsequent releases.>
 
-This module provides a date calculator. You can write date literals in ISO 8601
-format (though not all format variants are supported), e.g. C<2014-05-13>. Date
-duration can be specified using the natural syntax e.g. C<2 days 13 hours> or
-using the ISO 8601 format e.g. C<P2DT13H>.
+This module provides a date calculator, for doing date-related calculations. You
+can write date literals in ISO 8601 format (though not all format variants are
+supported), e.g. C<2014-05-13>. Date duration can be specified using the natural
+syntax e.g. C<2 days 13 hours> or using the ISO 8601 format e.g. C<P2DT13H>.
 
 Currently supported calculations:
 
@@ -391,21 +479,35 @@ Currently supported calculations:
  P2D * 2
  2 * P2D
 
-=item * (NOT YET) extract elements from date
+=item * extract elements from date
 
  year(2014-05-20)
- month(2014-05-20)
- day(2014-05-20)
+ quarter(today)
+ month(today)
+ day(today)
  dow(today)
+ doy(today)
+ doq(today)
+ wom(today)
+ woy(today)
+ hour(today)
+ minute(today)
+ second(today)
 
-=item * (NOT YET) extract elements from duration
+=item * extract elements from duration
 
+ years(P22D)
+ months(P22D)
  weeks(P22D)
+ days(P22D)
+ hours(P22D)
+ minutes(P22D)
+ seconds(P22D)
 
-=item * (NOT YET) some simple number arithmetics
+=item * some simple number arithmetics
 
- 2*4
- 2*4 days 1+1 hours
+ 3+4.5
+ 2**3 * P1D
 
 =item * (NOT YET) date comparison
 

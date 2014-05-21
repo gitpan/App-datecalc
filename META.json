@@ -1,5 +1,5 @@
 {
-   "abstract" : "Date arithmetics",
+   "abstract" : "Date calculator",
    "author" : [
       "Steven Haryanto <stevenharyanto@gmail.com>"
    ],
@@ -31,7 +31,10 @@
          "requires" : {
             "DateTime" : "0",
             "DateTime::Format::ISO8601" : "0",
+            "File::HomeDir" : "0",
+            "IO::Stty" : "0",
             "MarpaX::Simple" : "0",
+            "SHARYANTO::List::Util" : "0",
             "perl" : "5.010001"
          }
       },
@@ -57,7 +60,7 @@
          "web" : "https://github.com/sharyanto/perl-App-datecalc"
       }
    },
-   "version" : "0.01",
+   "version" : "0.02",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.018002"

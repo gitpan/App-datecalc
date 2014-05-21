@@ -3,31 +3,121 @@
 use 5.010;
 use strict;
 use warnings;
+#use Log::Any '$log';
 
-use App::datecalc;
-use Term::ReadLine;
+our $VERSION = '0.02'; # VERSION
+our $DATE = '2014-05-21'; # DATE
 
-our $VERSION = '0.01'; # VERSION
-our $DATE = '2014-05-20'; # DATE
+sub get_options {
+    require Getopt::Long;
 
-my $calc = App::datecalc->new;
+    my %opts;
+    Getopt::Long::GetOptions(
+        '--help|h|?', \$opts{help},
+        '--version|v', \$opts{version},
 
-my $term = Term::ReadLine->new('datecalc');
-my $prompt = "> ";
-my $OUT = $term->OUT || \*STDOUT;
+    );
 
-while ( defined ($_ = $term->readline($prompt)) ) {
-    my $res;
-    eval { $res = $calc->eval($_) };
-    if ($@) {
-        warn "Error: $@\n";
-    } else {
-        print $OUT $res, "\n";
+    if ($opts{help}) {
+        print <<_;
+Usage:
+  datecalc [OPTIONS]
+
+Options:
+  --help, -h, -?
+  --version, -v
+_
+        exit 0;
+    } elsif ($opts{version}) {
+        say "datecalc version $::VERSION";
+        exit 0;
     }
-    $term->addhistory($_) if /\S/;
 }
 
-# ABSTRACT: Date calculations
+sub eval_loop {
+    require App::datecalc;
+    require File::HomeDir;
+    require IO::Stty;
+    require Term::ReadLine;
+
+    my $calc = App::datecalc->new;
+    my $term = Term::ReadLine->new('datecalc');
+    my $prompt = "> ";
+    my $OUT = $term->OUT || \*STDOUT;
+
+    my $histfile = File::HomeDir->my_home . "/.datecalc_history";
+
+    # load history from file
+    if ($term->Features->{setHistory} && (-r $histfile)) {
+        #$log->tracef("Loading history from %s ...", $histfile);
+        open(my $fh, '<', $histfile)
+            or die "Can't open history file $histfile: $!\n";
+        chomp(my @history = <$fh>);
+        $term->SetHistory(@history);
+    }
+
+    my $sub_save_hist = sub {
+        require SHARYANTO::List::Util;
+        if ($term->Features->{getHistory}) {
+            my $fh;
+            if (open $fh, ">", $histfile) {
+                print $fh "$_\n" for
+                    SHARYANTO::List::Util::uniq(
+                        grep { length } $term->GetHistory
+                    );
+            }
+        }
+    };
+
+    local $SIG{INT} = sub {
+        # save history when we are interrupted
+        $sub_save_hist->();
+        print STDERR "Interrupted\n";
+        if ($term->ReadLine eq 'Term::ReadLine::Gnu') {
+            IO::Stty::stty(\*STDIN, 'echo');
+        }
+        exit 1;
+    };
+
+    #local $SIG{__DIE__} = sub {
+    #    IO::Stty::stty(\*STDIN, 'echo');
+    #    die @_;
+    #};
+
+    # some workaround for Term::ReadLine
+    my $attribs = $term->Attribs;
+    if ($term->ReadLine eq 'Term::ReadLine::Gnu') {
+        # TR::Gnu traps our INT handler
+        # ref: http://www.perlmonks.org/?node_id=1003497
+        $attribs->{catch_signals} = 0;
+    } elsif ($term->ReadLine eq 'Term::ReadLine::Perl') {
+        # TR::Perl messes up colors
+        # doesn't do anything?
+        #$term->ornaments(0);
+        #$attribs->{term_set} = ["", "", "", ""];
+    }
+
+    while ( defined ($_ = $term->readline($prompt)) ) {
+        my $res;
+        eval { $res = $calc->eval($_) };
+        if ($@) {
+            warn "Error: $@\n";
+        } else {
+            print $OUT $res, "\n";
+        }
+        # double?
+        #$term->addhistory($_) if /\S/;
+    }
+
+    $sub_save_hist->();
+}
+
+### main
+
+get_options();
+eval_loop();
+
+# ABSTRACT: Date calculator
 # PODNAME: datecalc
 
 __END__
@@ -38,11 +128,11 @@ __END__
 
 =head1 NAME
 
-datecalc - Date calculations
+datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.01 of datecalc (from Perl distribution App-datecalc), released on 2014-05-20.
+This document describes version 0.02 of datecalc (from Perl distribution App-datecalc), released on 2014-05-21.
 
 =head1 SYNOPSIS
 
@@ -83,6 +173,10 @@ This document describes version 0.01 of datecalc (from Perl distribution App-dat
 This is a command-line utility to perform date calculations.
 
 For now, for more details, see L<App::datecalc>.
+
+=head1 FILES
+
+=head2 ~/.datecalc_history
 
 =head1 HOMEPAGE
 

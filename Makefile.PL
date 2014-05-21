@@ -10,7 +10,7 @@ use ExtUtils::MakeMaker 6.30;
 
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "Date arithmetics",
+  "ABSTRACT" => "Date calculator",
   "AUTHOR" => "Steven Haryanto <stevenharyanto\@gmail.com>",
   "BUILD_REQUIRES" => {},
   "CONFIGURE_REQUIRES" => {
@@ -25,7 +25,10 @@ my %WriteMakefileArgs = (
   "PREREQ_PM" => {
     "DateTime" => 0,
     "DateTime::Format::ISO8601" => 0,
-    "MarpaX::Simple" => 0
+    "File::HomeDir" => 0,
+    "IO::Stty" => 0,
+    "MarpaX::Simple" => 0,
+    "SHARYANTO::List::Util" => 0
   },
   "TEST_REQUIRES" => {
     "File::Spec" => 0,
@@ -34,7 +37,7 @@ my %WriteMakefileArgs = (
     "Test::Exception" => 0,
     "Test::More" => "0.98"
   },
-  "VERSION" => "0.01",
+  "VERSION" => "0.02",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -44,10 +47,13 @@ my %WriteMakefileArgs = (
 my %FallbackPrereqs = (
   "DateTime" => 0,
   "DateTime::Format::ISO8601" => 0,
+  "File::HomeDir" => 0,
   "File::Spec" => 0,
   "IO::Handle" => 0,
+  "IO::Stty" => 0,
   "IPC::Open3" => 0,
   "MarpaX::Simple" => 0,
+  "SHARYANTO::List::Util" => 0,
   "Test::Exception" => 0,
   "Test::More" => "0.98"
 );

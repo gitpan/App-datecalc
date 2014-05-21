@@ -54,5 +54,41 @@ subtest 'duration multiplication/division with number' => sub {
     is($calc->eval('2 * P5D'), 'P1W3D');
 };
 
+subtest 'number arithmetics' => sub {
+    is($calc->eval('2+3'), '5');
+    is($calc->eval('1*2*3*4*5'), '120');
+    is($calc->eval('7/2'), '3.5');
+    is($calc->eval('2**2**3'), '256');
+    is($calc->eval('4-5'), '-1');
+    is($calc->eval('2*3 * P1D'), 'P6D');
+};
+
+subtest 'date functions' => sub {
+    is($calc->eval('year(2014-05-21)'), 2014);
+    is($calc->eval('month(2014-05-21)'), 5);
+    is($calc->eval('day(2014-05-21)'), 21);
+    is($calc->eval('dow(2014-05-21)'), 3);
+    is($calc->eval('quarter(2014-05-21)'), 2);
+    is($calc->eval('doy(2014-05-21)'), 141);
+    is($calc->eval('wom(2014-05-21)'), 4);
+    is($calc->eval('woy(2014-05-21)'), 21);
+    is($calc->eval('doq(2014-05-21)'), 51);
+
+    #is($calc->eval('hour(2014-05-21)'), );
+    #is($calc->eval('minute(2014-05-21)'), );
+    #is($calc->eval('second(2014-05-21)'), );
+};
+
+subtest 'duration functions' => sub {
+    is($calc->eval('years(P2Y13M)'), 3);
+    is($calc->eval('months(P2Y13M)'), 1);
+    is($calc->eval('weeks(P7D)'), 1);
+    is($calc->eval('days(P8D)'), 1);
+
+    is($calc->eval('hours(PT8H)'), 8);
+    is($calc->eval('minutes(PT13M)'), 13);
+    is($calc->eval('seconds(PT70S)'), 70);
+};
+
 DONE_TESTING:
 done_testing;
