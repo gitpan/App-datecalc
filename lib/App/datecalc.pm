@@ -9,8 +9,8 @@ use DateTime::Format::ISO8601;
 use MarpaX::Simple qw(gen_parser);
 use Scalar::Util qw(blessed);
 
-our $VERSION = '0.02'; # VERSION
-our $DATE = '2014-05-21'; # DATE
+our $VERSION = '0.03'; # VERSION
+our $DATE = '2014-05-28'; # DATE
 
 # XXX there should already be an existing module that does this
 sub __fmtduriso {
@@ -53,24 +53,28 @@ answer               ::= date_expr
 num_expr             ::= num_add
 num_add              ::= num_mult
                        | num_add op_addsub num_add                        action=>num_add
-num_mult             ::= num_pow
+num_mult             ::= num_unary
                        | num_mult op_multdiv num_mult                     action=>num_mult
+num_unary            ::= num_pow
+                      || op_unary num_unary                               action=>num_unary assoc=>right
 num_pow              ::= num_term
                       || num_pow '**' num_pow                             action=>num_pow assoc=>right
 num_term             ::= num_literal
+                       | func_inum_onum
                        | func_idate_onum
                        | func_idur_onum
                        | ('(') num_expr (')')
 
-date_expr            ::= date_sub_date
-date_sub_date        ::= date_add_dur
-                       | date_sub_date '-' date_sub_date                  action=>date_sub_date
+date_expr            ::= date_add_dur
 date_add_dur         ::= date_term
                        | date_add_dur op_addsub dur_term                  action=>date_add_dur
 date_term            ::= date_literal
 #                       | date_variable
 #                       | func_idate_odate
                        | ('(') date_expr (')')
+
+func_inum_onum_names   ~ 'abs' | 'round'
+func_inum_onum       ::= func_inum_onum_names ('(') num_expr (')')        action=>func_inum_onum
 
 func_idate_onum_names  ~ 'year' | 'month' | 'day' | 'dow' | 'quarter'
                        | 'doy' | 'wom' | 'woy' | 'doq'
@@ -79,6 +83,7 @@ func_idate_onum      ::= func_idate_onum_names ('(') date_expr (')')      action
 
 func_idur_onum_names   ~ 'years' | 'months' | 'weeks' | 'days'
                        | 'hours' | 'minutes' | 'seconds'
+                       | 'totdays'
 func_idur_onum       ::= func_idur_onum_names ('(') dur_expr (')')        action=>func_idur_onum
 
 date_literal         ::= iso_date_literal                                 action=>datelit_iso
@@ -93,8 +98,11 @@ day2                   ~ [\d][\d]
 iso_date_literal       ~ year4 '-' mon2 '-' day2
 
 dur_expr             ::= dur_add_dur
+                       | date_sub_date
 dur_add_dur          ::= dur_mult_num
                        | dur_add_dur op_addsub dur_add_dur                action=>dur_add_dur
+date_sub_date        ::= date_add_dur
+                       | date_sub_date '-' date_sub_date                  action=>date_sub_date
 
 dur_mult_num         ::= dur_term
                        | dur_mult_num op_multdiv num_expr                 action=>dur_mult_num
@@ -199,6 +207,7 @@ num                    ~ digits
 posnum                 ~ digits
                        | digits '.' digits
 
+op_unary               ~ [+-]
 op_addsub              ~ [+-]
 
 op_mult                ~ [*]
@@ -217,7 +226,7 @@ _
             },
             date_sub_date => sub {
                 my $h = shift;
-                $_[0]->subtract_datetime($_[2]);
+                $_[0]->delta_days($_[2]);
             },
             datelit_special => sub {
                 my $h = shift;
@@ -315,6 +324,18 @@ _
                 $params{seconds} = $1 if $t =~ /(-?\d+(?:\.\d+)?)S/i;
                 DateTime::Duration->new(%params);
             },
+            func_inum_onum => sub {
+                my $h = shift;
+                my $fn = $_[0];
+                my $num = $_[1];
+                if ($fn eq 'abs') {
+                    abs($num);
+                } elsif ($fn eq 'round') {
+                    sprintf("%.0f", $num);
+                } else {
+                    die "BUG: Unknown number function $fn";
+                }
+            },
             func_idate_onum => sub {
                 my $h = shift;
                 my $fn = $_[0];
@@ -359,6 +380,8 @@ _
                     $dur->weeks;
                 } elsif ($fn eq 'days') {
                     $dur->days;
+                } elsif ($fn eq 'totdays') {
+                    $dur->in_units("days");
                 } elsif ($fn eq 'hours') {
                     $dur->hours;
                 } elsif ($fn eq 'minutes') {
@@ -383,6 +406,17 @@ _
                     $_[0] * $_[2];
                 } else {
                     $_[0] / $_[2];
+                }
+            },
+            num_unary => sub {
+                my $h = shift;
+                my $op = $_[0];
+                my $num = $_[1];
+                if ($op eq '+') {
+                    $num;
+                } else {
+                    # -
+                    -$num;
                 }
             },
             num_pow => sub {
@@ -425,7 +459,7 @@ App::datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.02 of App::datecalc (from Perl distribution App-datecalc), released on 2014-05-21.
+This document describes version 0.03 of App::datecalc (from Perl distribution App-datecalc), released on 2014-05-28.
 
 =head1 SYNOPSIS
 
@@ -499,7 +533,10 @@ Currently supported calculations:
  years(P22D)
  months(P22D)
  weeks(P22D)
- days(P22D)
+ days(P22D)       # 1, because P22D normalizes to P3W1D
+ totdays(P22D)    # 22
+ days(P1M1D       # 1
+ totdays(P1M1D    # 1, because months cannot be converted to days
  hours(P22D)
  minutes(P22D)
  seconds(P22D)
@@ -508,6 +545,8 @@ Currently supported calculations:
 
  3+4.5
  2**3 * P1D
+ abs(2-5)         # 3
+ round(1.6+3)     # 5
 
 =item * (NOT YET) date comparison
 

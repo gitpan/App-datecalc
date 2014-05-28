@@ -5,8 +5,8 @@ use strict;
 use warnings;
 #use Log::Any '$log';
 
-our $VERSION = '0.02'; # VERSION
-our $DATE = '2014-05-21'; # DATE
+our $VERSION = '0.03'; # VERSION
+our $DATE = '2014-05-28'; # DATE
 
 sub get_options {
     require Getopt::Long;
@@ -132,7 +132,7 @@ datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.02 of datecalc (from Perl distribution App-datecalc), released on 2014-05-21.
+This document describes version 0.03 of datecalc (from Perl distribution App-datecalc), released on 2014-05-28.
 
 =head1 SYNOPSIS
 
@@ -167,6 +167,16 @@ This document describes version 0.02 of datecalc (from Perl distribution App-dat
 
  > 6d + 8d + 13 min
  P2WT13M
+
+ > month(today)
+ 5
+
+ > days(P8D)
+ 1
+ > weeks(P8D)
+ 1
+ > P8D
+ P1W1D
 
 =head1 DESCRIPTION
 

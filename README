@@ -2,8 +2,8 @@ NAME
     App::datecalc - Date calculator
 
 VERSION
-    This document describes version 0.02 of App::datecalc (from Perl
-    distribution App-datecalc), released on 2014-05-21.
+    This document describes version 0.03 of App::datecalc (from Perl
+    distribution App-datecalc), released on 2014-05-28.
 
 SYNOPSIS
      use App::datecalc;
@@ -74,7 +74,10 @@ DESCRIPTION
          years(P22D)
          months(P22D)
          weeks(P22D)
-         days(P22D)
+         days(P22D)       # 1, because P22D normalizes to P3W1D
+         totdays(P22D)    # 22
+         days(P1M1D       # 1
+         totdays(P1M1D    # 1, because months cannot be converted to days
          hours(P22D)
          minutes(P22D)
          seconds(P22D)
@@ -83,6 +86,8 @@ DESCRIPTION
 
          3+4.5
          2**3 * P1D
+         abs(2-5)         # 3
+         round(1.6+3)     # 5
 
     *   (NOT YET) date comparison
 

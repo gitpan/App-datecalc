@@ -41,7 +41,7 @@ subtest 'date addition/subtraction with duration' => sub {
 };
 
 subtest 'date subtraction with date' => sub {
-    is($calc->eval('2014-05-20 - 2014-03-03'), 'P2M2W3D');
+    is($calc->eval('2014-05-20 - 2014-03-03'), 'P11W1D');
 };
 
 subtest 'duration addition/subtraction with duration' => sub {
@@ -61,8 +61,14 @@ subtest 'number arithmetics' => sub {
     is($calc->eval('2**2**3'), '256');
     is($calc->eval('4-5'), '-1');
     is($calc->eval('2*3 * P1D'), 'P6D');
+    is($calc->eval('+-+5'), '-5');
 };
 
+subtest 'numeric functions' => sub {
+    is($calc->eval('abs(-1)'), 1);
+    is($calc->eval('round(1.2)'), 1);
+    is($calc->eval('round(1.6)'), 2);
+};
 subtest 'date functions' => sub {
     is($calc->eval('year(2014-05-21)'), 2014);
     is($calc->eval('month(2014-05-21)'), 5);
@@ -84,6 +90,7 @@ subtest 'duration functions' => sub {
     is($calc->eval('months(P2Y13M)'), 1);
     is($calc->eval('weeks(P7D)'), 1);
     is($calc->eval('days(P8D)'), 1);
+    is($calc->eval('totdays(P8D)'), 8);
 
     is($calc->eval('hours(PT8H)'), 8);
     is($calc->eval('minutes(PT13M)'), 13);
