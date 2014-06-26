@@ -5,8 +5,8 @@ use strict;
 use warnings;
 #use Log::Any '$log';
 
-our $VERSION = '0.03'; # VERSION
-our $DATE = '2014-05-28'; # DATE
+our $VERSION = '0.04'; # VERSION
+our $DATE = '2014-06-26'; # DATE
 
 sub get_options {
     require Getopt::Long;
@@ -62,7 +62,7 @@ sub eval_loop {
             my $fh;
             if (open $fh, ">", $histfile) {
                 print $fh "$_\n" for
-                    SHARYANTO::List::Util::uniq(
+                    SHARYANTO::List::Util::uniq_adj(
                         grep { length } $term->GetHistory
                     );
             }
@@ -99,6 +99,14 @@ sub eval_loop {
 
     while ( defined ($_ = $term->readline($prompt)) ) {
         my $res;
+        if ($_ eq 'help' || $_ eq '?') {
+            say "Type date expression into the prompt, e.g.: 2014-06-26 + 2 week.";
+            say "For more details on available features, 'man datecalc'.";
+            say "";
+            next;
+        } elsif ($_ eq 'exit' || $_ eq 'quit') {
+            last;
+        }
         eval { $res = $calc->eval($_) };
         if ($@) {
             warn "Error: $@\n";
@@ -132,7 +140,7 @@ datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.03 of datecalc (from Perl distribution App-datecalc), released on 2014-05-28.
+This document describes version 0.04 of datecalc (from Perl distribution App-datecalc), released on 2014-06-26.
 
 =head1 SYNOPSIS
 

@@ -34,7 +34,7 @@
             "File::HomeDir" : "0",
             "IO::Stty" : "0",
             "MarpaX::Simple" : "0",
-            "SHARYANTO::List::Util" : "0",
+            "SHARYANTO::List::Util" : "0.75",
             "perl" : "5.010001"
          }
       },
@@ -60,7 +60,7 @@
          "web" : "https://github.com/sharyanto/perl-App-datecalc"
       }
    },
-   "version" : "0.03",
+   "version" : "0.04",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.018002"

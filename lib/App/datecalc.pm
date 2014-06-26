@@ -9,8 +9,8 @@ use DateTime::Format::ISO8601;
 use MarpaX::Simple qw(gen_parser);
 use Scalar::Util qw(blessed);
 
-our $VERSION = '0.03'; # VERSION
-our $DATE = '2014-05-28'; # DATE
+our $VERSION = '0.04'; # VERSION
+our $DATE = '2014-06-26'; # DATE
 
 # XXX there should already be an existing module that does this
 sub __fmtduriso {
@@ -459,7 +459,7 @@ App::datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.03 of App::datecalc (from Perl distribution App-datecalc), released on 2014-05-28.
+This document describes version 0.04 of App::datecalc (from Perl distribution App-datecalc), released on 2014-06-26.
 
 =head1 SYNOPSIS
 
