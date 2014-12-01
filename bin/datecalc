@@ -1,12 +1,12 @@
-#!/usr/bin/perl
+#!perl
+
+our $DATE = '2014-12-01'; # DATE
+our $VERSION = '0.05'; # VERSION
 
 use 5.010;
 use strict;
 use warnings;
 #use Log::Any '$log';
-
-our $VERSION = '0.04'; # VERSION
-our $DATE = '2014-06-26'; # DATE
 
 sub get_options {
     require Getopt::Long;
@@ -140,7 +140,7 @@ datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.04 of datecalc (from Perl distribution App-datecalc), released on 2014-06-26.
+This document describes version 0.05 of datecalc (from Perl distribution App-datecalc), released on 2014-12-01.
 
 =head1 SYNOPSIS
 
@@ -214,11 +214,11 @@ feature.
 
 =head1 AUTHOR
 
-Steven Haryanto <stevenharyanto@gmail.com>
+perlancar <perlancar@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by Steven Haryanto.
+This software is copyright (c) 2014 by perlancar@cpan.org.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

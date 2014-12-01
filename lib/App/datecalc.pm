@@ -1,5 +1,8 @@
 package App::datecalc;
 
+our $DATE = '2014-12-01'; # DATE
+our $VERSION = '0.05'; # VERSION
+
 use 5.010001;
 use strict;
 use warnings;
@@ -8,9 +11,6 @@ use DateTime;
 use DateTime::Format::ISO8601;
 use MarpaX::Simple qw(gen_parser);
 use Scalar::Util qw(blessed);
-
-our $VERSION = '0.04'; # VERSION
-our $DATE = '2014-06-26'; # DATE
 
 # XXX there should already be an existing module that does this
 sub __fmtduriso {
@@ -438,7 +438,7 @@ sub eval {
     if (blessed($res) && $res->isa('DateTime::Duration')) {
         __fmtduriso($res);
     } elsif (blessed($res) && $res->isa('DateTime')) {
-        $res->ymd;
+        $res->ymd . "#".$res->day_abbr;
     } else {
         "$res";
     }
@@ -459,7 +459,7 @@ App::datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.04 of App::datecalc (from Perl distribution App-datecalc), released on 2014-06-26.
+This document describes version 0.05 of App::datecalc (from Perl distribution App-datecalc), released on 2014-12-01.
 
 =head1 SYNOPSIS
 
@@ -535,8 +535,8 @@ Currently supported calculations:
  weeks(P22D)
  days(P22D)       # 1, because P22D normalizes to P3W1D
  totdays(P22D)    # 22
- days(P1M1D       # 1
- totdays(P1M1D    # 1, because months cannot be converted to days
+ days(P1M1D)      # 1
+ totdays(P1M1D)   # 1, because months cannot be converted to days
  hours(P22D)
  minutes(P22D)
  seconds(P22D)
@@ -601,11 +601,11 @@ feature.
 
 =head1 AUTHOR
 
-Steven Haryanto <stevenharyanto@gmail.com>
+perlancar <perlancar@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by Steven Haryanto.
+This software is copyright (c) 2014 by perlancar@cpan.org.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
