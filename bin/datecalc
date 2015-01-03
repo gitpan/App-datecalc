@@ -1,7 +1,7 @@
 #!perl
 
-our $DATE = '2014-12-01'; # DATE
-our $VERSION = '0.05'; # VERSION
+our $DATE = '2015-01-03'; # DATE
+our $VERSION = '0.06'; # VERSION
 
 use 5.010;
 use strict;
@@ -140,20 +140,20 @@ datecalc - Date calculator
 
 =head1 VERSION
 
-This document describes version 0.05 of datecalc (from Perl distribution App-datecalc), released on 2014-12-01.
+This document describes version 0.06 of datecalc (from Perl distribution App-datecalc), released on 2015-01-03.
 
 =head1 SYNOPSIS
 
  % datecalc
 
  > today
- 2014-05-13
+ 2014-05-13#Tue
 
  > tomorrow
- 2014-05-14
+ 2014-05-14#Wed
 
  > today + 2 days
- 2014-05-15
+ 2014-05-15#Thu
 
  > 2014-05-13 - 2014-02-14
  P2M3W6D
@@ -165,7 +165,7 @@ This document describes version 0.05 of datecalc (from Perl distribution App-dat
  P1W3D
 
  > 2014-05-13 + P2D
- 2014-05-15
+ 2014-05-15#Thu
 
  > 2 * 2 days 10 hours
  P4DT20H
@@ -218,7 +218,7 @@ perlancar <perlancar@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by perlancar@cpan.org.
+This software is copyright (c) 2015 by perlancar@cpan.org.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
